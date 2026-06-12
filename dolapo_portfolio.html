@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dolapo Onifade — Mathematician & Engineer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  :root {
+    --purple: #7F77DD;
+    --purple-light: #AFA9EC;
+    --purple-dark: #3C3489;
+    --teal: #1D9E75;
+    --teal-light: #5DCAA5;
+    --coral: #D85A30;
+    --amber: #EF9F27;
+    --pink: #D4537E;
+    --bg: #09090f;
+    --bg2: #111120;
+    --text: #f0eeff;
+    --muted: #8886aa;
+    --card: rgba(127,119,221,0.07);
+    --border: rgba(127,119,221,0.18);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* Canvas */
+  #bg-canvas {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    z-index: 0; pointer-events: none;
+  }
+
+  /* Nav */
+  nav {
+    position: fixed; top:0; left:0; width:100%;
+    z-index: 100;
+    padding: 1rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(9,9,15,0.7);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-size: 1.1rem; font-weight: 700;
+    background: linear-gradient(90deg, var(--purple-light), var(--teal-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: 0.02em;
+  }
+  .nav-links { display: flex; gap: 2rem; }
+  .nav-links a {
+    color: var(--muted); text-decoration: none;
+    font-size: 0.9rem; transition: color 0.2s;
+    letter-spacing: 0.03em;
+  }
+  .nav-links a:hover { color: var(--purple-light); }
+
+  /* Sections */
+  section {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    padding: 6rem 2rem 4rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* Hero */
+  #hero {
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding-top: 8rem;
+    min-height: 100vh;
+  }
+  .hero-name {
+    font-size: clamp(3rem, 7vw, 6rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #fff 0%, var(--purple-light) 50%, var(--teal-light) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    opacity: 0; animation: fadeUp 0.8s 0.5s forwards;
+    margin-bottom: 0.4rem;
+  }
+  .hero-desc {
+    font-size: 1rem; line-height: 1.7;
+    color: var(--muted); max-width: 600px;
+    opacity: 0; animation: fadeUp 0.8s 0.9s forwards;
+    margin-bottom: 1rem;
+  }
+
+  /* Section headings */
+  .section-tag {
+    display: inline-block;
+    font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--teal-light);
+    margin-bottom: 0.75rem;
+    padding: 0.3rem 0.8rem;
+    background: rgba(29,158,117,0.1);
+    border-radius: 2rem;
+    border: 1px solid rgba(29,158,117,0.2);
+  }
+  .section-heading {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800; letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #fff 30%, var(--purple-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .section-sub {
+    color: var(--muted); font-size: 1rem; max-width: 550px;
+    line-height: 1.7; margin-bottom: 3rem;
+  }
+
+  /* Research cards */
+  .research-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  .research-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 1.2rem;
+    padding: 1.75rem;
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+    position: relative; overflow: hidden;
+  }
+  .research-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--purple), var(--teal));
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .research-card:hover { transform: translateY(-4px); border-color: rgba(127,119,221,0.4); }
+  .research-card:hover::before { opacity: 1; }
+  .research-card:hover { box-shadow: 0 12px 40px rgba(127,119,221,0.15); }
+  .card-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; margin-bottom: 1rem;
+  }
+  .card-icon.purple { background: rgba(127,119,221,0.15); }
+  .card-icon.teal { background: rgba(29,158,117,0.15); }
+  .card-icon.coral { background: rgba(216,90,48,0.15); }
+  .card-icon.amber { background: rgba(239,159,39,0.15); }
+  .card-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff; }
+  .card-body { font-size: 0.88rem; color: var(--muted); line-height: 1.7; }
+  .card-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+  .tag {
+    font-size: 0.72rem; padding: 0.25rem 0.65rem;
+    border-radius: 2rem; border: 1px solid var(--border);
+    color: var(--purple-light); background: rgba(127,119,221,0.07);
+    letter-spacing: 0.03em;
+  }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 2.5rem; }
+  .timeline::before {
+    content: '';
+    position: absolute; left: 0.6rem; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--purple), var(--teal), transparent);
+  }
+  .tl-item { position: relative; margin-bottom: 2.5rem; }
+  .tl-dot {
+    position: absolute; left: -2rem; top: 0.35rem;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--purple); border: 2px solid var(--bg);
+    box-shadow: 0 0 10px var(--purple);
+  }
+  .tl-dot.teal { background: var(--teal); box-shadow: 0 0 10px var(--teal); }
+  .tl-dot.coral { background: var(--coral); box-shadow: 0 0 10px var(--coral); }
+  .tl-period {
+    font-size: 0.75rem; letter-spacing: 0.08em;
+    color: var(--teal-light); margin-bottom: 0.35rem; text-transform: uppercase;
+  }
+  .tl-role { font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 0.2rem; }
+  .tl-org { font-size: 0.9rem; color: var(--purple-light); margin-bottom: 0.5rem; }
+  .tl-bullets { list-style: none; }
+  .tl-bullets li {
+    font-size: 0.88rem; color: var(--muted); line-height: 1.6;
+    margin-bottom: 0.3rem; padding-left: 1rem; position: relative;
+  }
+  .tl-bullets li::before {
+    content: '→';
+    position: absolute; left: 0; color: var(--teal-light); font-size: 0.8rem;
+  }
+
+  /* Skills */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+  .skill-group {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 1.2rem; padding: 1.5rem;
+  }
+  .skill-group-title {
+    font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--purple-light); margin-bottom: 1rem;
+  }
+  .skill-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .skill-chip {
+    font-size: 0.82rem; padding: 0.3rem 0.75rem;
+    border-radius: 2rem;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .skill-chip:hover { filter: brightness(1.2); }
+  .chip-teal { background: rgba(29,158,117,0.1); border: 1px solid rgba(29,158,117,0.25); color: var(--teal-light); }
+  .chip-coral { background: rgba(216,90,48,0.1); border: 1px solid rgba(216,90,48,0.25); color: #f09977; }
+
+  /* Project cards */
+  .project-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 1.2rem; padding: 1.75rem 2rem;
+    display: flex; flex-direction: column; gap: 1rem;
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+    position: relative; overflow: hidden;
+  }
+  .project-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--teal), var(--purple));
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .project-card:hover { transform: translateY(-3px); border-color: rgba(29,158,117,0.35); }
+  .project-card:hover::before { opacity: 1; }
+  .project-card:hover { box-shadow: 0 12px 40px rgba(29,158,117,0.1); }
+  .project-header { display: flex; align-items: flex-start; gap: 1rem; }
+  .project-meta { display: flex; flex-direction: column; gap: 0.2rem; flex: 1; }
+  .project-type {
+    font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--teal-light);
+  }
+  .project-title { font-size: 1.1rem; font-weight: 700; color: #fff; line-height: 1.3; }
+  .project-authors { font-size: 0.82rem; color: var(--muted); margin-top: 0.1rem; }
+  .project-abstract {
+    font-size: 0.88rem; color: var(--muted); line-height: 1.75;
+    border-left: 2px solid var(--border); padding-left: 1rem;
+  }
+  .project-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 0.75rem;
+  }
+  .project-pdf {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.82rem; color: var(--teal-light);
+    text-decoration: none; padding: 0.4rem 0.9rem;
+    border: 1px solid rgba(29,158,117,0.25); border-radius: 2rem;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .project-pdf:hover { background: rgba(29,158,117,0.08); border-color: var(--teal-light); }
+
+  /* Contact */
+  #contact {
+    display: flex; flex-direction: column;
+    align-items: center; text-align: center;
+    justify-content: center;
+  }
+  .contact-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 2rem; padding: 3rem;
+    max-width: 600px; width: 100%;
+  }
+  .contact-links { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem; }
+  .contact-link {
+    display: flex; align-items: center; gap: 0.5rem;
+    color: var(--purple-light); text-decoration: none;
+    font-size: 0.9rem; padding: 0.6rem 1.2rem;
+    border: 1px solid var(--border); border-radius: 2rem;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .contact-link:hover { background: var(--card); border-color: var(--purple-light); }
+
+  /* Divider */
+  .divider {
+    width: 100%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 1rem 0 3rem;
+    position: relative; z-index: 1;
+  }
+
+  /* Footer */
+  footer {
+    position: relative; z-index: 1;
+    text-align: center; padding: 2rem;
+    color: var(--muted); font-size: 0.82rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Floating math */
+  .math-float {
+    position: fixed; pointer-events: none; z-index: 0;
+    font-size: 0.85rem; color: rgba(127,119,221,0.12);
+    font-family: 'Times New Roman', serif; font-style: italic;
+    user-select: none;
+    animation: floatMath 20s linear infinite;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes floatMath {
+    0% { transform: translateY(0) rotate(-2deg); opacity: 0.12; }
+    50% { transform: translateY(-30px) rotate(2deg); opacity: 0.07; }
+    100% { transform: translateY(0) rotate(-2deg); opacity: 0.12; }
+  }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0; transform: translateY(32px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  /* Two-col layout for work */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  @media (max-width: 700px) {
+    .two-col { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    section { padding: 5rem 1.2rem 3rem; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- Floating math symbols -->
+<div class="math-float" style="top:15%;left:5%;animation-delay:0s">∇f(x)</div>
+<div class="math-float" style="top:30%;right:8%;animation-delay:3s">L²(μ)</div>
+<div class="math-float" style="top:55%;left:3%;animation-delay:6s">∂u/∂t</div>
+<div class="math-float" style="top:70%;right:4%;animation-delay:9s">argmin</div>
+<div class="math-float" style="top:85%;left:10%;animation-delay:12s">Σᵢ λᵢ</div>
+<div class="math-float" style="top:45%;right:12%;animation-delay:15s">⟨f,g⟩</div>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-logo">D. Onifade</div>
+  <div class="nav-links">
+    <a href="#projects">Projects</a>
+    <a href="#experience">Experience</a>
+    <a href="#skills">Skills</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section id="hero">
+  <h1 class="hero-name">Dolapo<br>Onifade</h1>
+  <p class="hero-desc">
+    I am a third-year Mathematics PhD student at Louisiana State University. I hold a B.Sc. in Mathematics from the University of Ibadan, Nigeria. My research interests lie broadly in nonlinear optimization, control theory, and the mathematics of sampling algorithms. I am currently exploring dynamic event-triggered control with input and state delays, with connections to Lyapunov stability theory and LMI-based methods.
+  </p>
+  <p class="hero-desc">
+    Before returning to academia, I worked as a frontend engineer and technology consultant, and completed a Six Sigma trainee program in industrial process improvement.
+  </p>
+</section>
+
+<div class="divider"></div>
+
+<!-- Projects -->
+<section id="projects">
+  <div class="reveal">
+    <div class="section-tag">Projects & Reports</div>
+    <h2 class="section-heading">Projects</h2>
+    <p class="section-sub">Technical reports and course projects from my graduate studies at LSU.</p>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:1.5rem;" class="reveal">
+
+    <div class="project-card">
+      <div class="project-header">
+        <div class="project-meta">
+          <div class="project-type">Numerical Linear Algebra · Technical Report</div>
+          <div class="project-title">QR Decomposition via Gram–Schmidt</div>
+          <div class="project-authors">Dolapo Onifade · Department of Mathematics, LSU</div>
+        </div>
+      </div>
+      <div class="project-abstract">
+        This report details the QR decomposition via Gram–Schmidt orthogonalization, contrasting the numerical stability of the classical and modified algorithms in finite-precision arithmetic. The enhanced stability of the modified Gram–Schmidt algorithm is demonstrated analytically and numerically. The report then applies QR decomposition to linear least-squares problems, comparing its numerical robustness against the normal equations approach, particularly in the context of matrix ill-conditioning.
+      </div>
+      <div class="project-footer">
+        <div class="card-tags" style="margin:0;">
+          <span class="tag">QR Decomposition</span>
+          <span class="tag">Gram–Schmidt</span>
+          <span class="tag">Numerical Stability</span>
+          <span class="tag">Least Squares</span>
+        </div>
+        <a href="#" class="project-pdf">📄 Download PDF</a>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-header">
+        <div class="project-meta">
+          <div class="project-type">Machine Learning · Group Project · CSC 7333</div>
+          <div class="project-title">Sentiment Analysis of Text Reviews Using Classical and Deep Learning Methods</div>
+          <div class="project-authors">Basit Abdulfatai, Marvellous Mareya, Solomon Joe, Dolapo Onifade, Victory Oghale, Philip John</div>
+        </div>
+      </div>
+      <div class="project-abstract">
+        This project trains and evaluates four sentiment classifiers on the IMDb Movie Reviews dataset (50,000 reviews), comparing classical approaches (Naïve Bayes, SVM) against deep learning methods (Bidirectional LSTM, fine-tuned BERT). All models undergo systematic hyperparameter search. The key finding is that a well-tuned SVM achieves the highest accuracy (90.16%) in just 25 seconds on CPU — outperforming BERT (89.68%), which requires approximately 474× more compute. The results challenge the common assumption that greater model complexity automatically yields better performance.
+      </div>
+      <div class="project-footer">
+        <div class="card-tags" style="margin:0;">
+          <span class="tag">NLP</span>
+          <span class="tag">SVM</span>
+          <span class="tag">BERT</span>
+          <span class="tag">BiLSTM</span>
+          <span class="tag">PyTorch</span>
+        </div>
+        <a href="#" class="project-pdf">📄 Download PDF</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Experience -->
+<section id="experience">
+  <div class="reveal">
+    <div class="section-tag">Career Timeline</div>
+    <h2 class="section-heading">Experience</h2>
+  </div>
+  <div class="two-col">
+    <div class="reveal">
+      <div style="margin-bottom:1.2rem;font-size:0.78rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--purple-light);">Academia</div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-period">Aug 2024 – Present</div>
+          <div class="tl-role">Graduate Teaching Assistant</div>
+          <div class="tl-org">LSU Department of Mathematics</div>
+          <ul class="tl-bullets">
+            <li>Teaching Calculus, Linear Algebra, and ODEs</li>
+            <li>SIAM Chapter Treasurer (2026)</li>
+          </ul>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot teal"></div>
+          <div class="tl-period">Mar 2021 – Dec 2021</div>
+          <div class="tl-role">Research Student</div>
+          <div class="tl-org">University of Ibadan</div>
+          <ul class="tl-bullets">
+            <li>Controllability & stability of nonlinear systems</li>
+            <li>Lyapunov's indirect method, Kalman criterion</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="reveal">
+      <div style="margin-bottom:1.2rem;font-size:0.78rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--teal-light);">Industry</div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-period">Oct 2023 – Aug 2024</div>
+          <div class="tl-role">Frontend Engineer</div>
+          <div class="tl-org">Anamo Inc, Las Vegas</div>
+          <ul class="tl-bullets">
+            <li>Real-time security & performance dashboards</li>
+            <li>Scalable monitoring frameworks</li>
+          </ul>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot teal"></div>
+          <div class="tl-period">Sep 2023 – Jun 2024</div>
+          <div class="tl-role">Technology Consultant</div>
+          <div class="tl-org">KPMG Nigeria</div>
+          <ul class="tl-bullets">
+            <li>Oracle → SAP enterprise migration</li>
+            <li>Compliance audit documentation</li>
+          </ul>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot teal"></div>
+          <div class="tl-period">Feb 2022 – Sep 2023</div>
+          <div class="tl-role">Frontend Engineer</div>
+          <div class="tl-org">CloudPlexo, UK</div>
+          <ul class="tl-bullets">
+            <li>10% customer retention improvement</li>
+            <li>AWS-integrated cloud solutions</li>
+          </ul>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot coral"></div>
+          <div class="tl-period">Jun 2022 – May 2023</div>
+          <div class="tl-role">Six Sigma Trainee</div>
+          <div class="tl-org">Dufil Prima Foods, Nigeria</div>
+          <ul class="tl-bullets">
+            <li>24.82% reduction in noodle scrap waste</li>
+            <li>Lean & Six Sigma process improvement</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Skills -->
+<section id="skills">
+  <div class="reveal">
+    <div class="section-tag">Technical Toolkit</div>
+    <h2 class="section-heading">Skills & Tools</h2>
+  </div>
+  <div class="skills-grid reveal">
+    <div class="skill-group">
+      <div class="skill-group-title">Programming</div>
+      <div class="skill-chips">
+        <span class="skill-chip chip-teal">Python</span>
+        <span class="skill-chip chip-teal">MATLAB</span>
+        <span class="skill-chip chip-teal">JavaScript</span>
+        <span class="skill-chip chip-teal">TypeScript</span>
+        <span class="skill-chip chip-teal">SciLab</span>
+        <span class="skill-chip chip-teal">LaTeX</span>
+      </div>
+    </div>
+    <div class="skill-group">
+      <div class="skill-group-title">Platforms & Tools</div>
+      <div class="skill-chips">
+        <span class="skill-chip chip-coral">AWS</span>
+        <span class="skill-chip chip-coral">SAP Analytics</span>
+        <span class="skill-chip chip-coral">Oracle</span>
+        <span class="skill-chip chip-coral">Git</span>
+        <span class="skill-chip chip-coral">MS Office</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Contact -->
+<section id="contact">
+  <div class="reveal contact-card">
+    <div class="section-tag" style="margin:0 auto 1rem;">Let's connect</div>
+    <h2 class="section-heading" style="margin-bottom:0.5rem;">Get in Touch</h2>
+    <p style="color:var(--muted);font-size:0.95rem;line-height:1.7;margin-top:0.5rem;">
+      Open to research collaborations, seminar invitations, and opportunities at the interface of mathematics and computing.
+    </p>
+    <div class="contact-links">
+      <a href="mailto:donifa1@lsu.edu" class="contact-link">📧 donifa1@lsu.edu</a>
+      <span class="contact-link">📍 345 Lockett Hall, LSU</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 Dolapo Onifade · PhD Student, Louisiana State University</p>
+</footer>
+
+<script>
+/* ======== THREE.JS BACKGROUND ======== */
+const canvas = document.getElementById('bg-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.z = 4;
+
+/* Particle field */
+const count = 2400;
+const positions = new Float32Array(count * 3);
+const colors = new Float32Array(count * 3);
+const palette = [
+  [0.498, 0.467, 0.867],
+  [0.365, 0.620, 0.647],
+  [0.333, 0.200, 0.733],
+  [0.114, 0.620, 0.459],
+  [0.937, 0.624, 0.153],
+  [0.831, 0.325, 0.494],
+];
+for (let i = 0; i < count; i++) {
+  positions[i * 3]     = (Math.random() - 0.5) * 14;
+  positions[i * 3 + 1] = (Math.random() - 0.5) * 14;
+  positions[i * 3 + 2] = (Math.random() - 0.5) * 14;
+  const c = palette[Math.floor(Math.random() * palette.length)];
+  colors[i * 3]     = c[0];
+  colors[i * 3 + 1] = c[1];
+  colors[i * 3 + 2] = c[2];
+}
+const geo = new THREE.BufferGeometry();
+geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+const mat = new THREE.PointsMaterial({
+  size: 0.028, vertexColors: true, transparent: true, opacity: 0.75,
+  sizeAttenuation: true
+});
+const particles = new THREE.Points(geo, mat);
+scene.add(particles);
+
+/* Wireframe icosahedron */
+const icoGeo = new THREE.IcosahedronGeometry(1.6, 1);
+const icoMat = new THREE.MeshBasicMaterial({
+  color: 0x7F77DD, wireframe: true, transparent: true, opacity: 0.07
+});
+const ico = new THREE.Mesh(icoGeo, icoMat);
+scene.add(ico);
+
+/* Floating torus */
+const torGeo = new THREE.TorusGeometry(2.2, 0.015, 8, 60);
+const torMat = new THREE.MeshBasicMaterial({
+  color: 0x1D9E75, transparent: true, opacity: 0.12
+});
+const torus = new THREE.Mesh(torGeo, torMat);
+torus.rotation.x = 1.1;
+scene.add(torus);
+
+/* Second ring */
+const ring2 = new THREE.Mesh(
+  new THREE.TorusGeometry(1.5, 0.012, 6, 48),
+  new THREE.MeshBasicMaterial({ color: 0xD85A30, transparent: true, opacity: 0.08 })
+);
+ring2.rotation.x = 0.4; ring2.rotation.z = 0.9;
+scene.add(ring2);
+
+/* Mouse tracking */
+let mx = 0, my = 0;
+document.addEventListener('mousemove', e => {
+  mx = (e.clientX / window.innerWidth - 0.5) * 2;
+  my = (e.clientY / window.innerHeight - 0.5) * 2;
+});
+
+let scrollY = 0;
+window.addEventListener('scroll', () => { scrollY = window.scrollY; });
+
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  particles.rotation.y = t * 0.025 + mx * 0.08;
+  particles.rotation.x = t * 0.012 + my * 0.04;
+  ico.rotation.y = t * 0.07 + mx * 0.12;
+  ico.rotation.x = t * 0.04 + my * 0.06;
+  torus.rotation.z = t * 0.06;
+  torus.rotation.y = t * 0.04;
+  ring2.rotation.x = 0.4 + t * 0.05;
+  ring2.rotation.z = 0.9 + t * 0.03;
+  camera.position.y = -scrollY * 0.0012;
+  camera.position.x = mx * 0.15;
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+/* ======== SCROLL REVEAL ======== */
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); }
+  });
+}, { threshold: 0.12 });
+reveals.forEach(el => observer.observe(el));
+
+/* ======== INTERACTIVE PARTICLE BURST on click ======== */
+document.addEventListener('click', e => {
+  const pos = geo.attributes.position.array;
+  const cx = (e.clientX / window.innerWidth - 0.5) * 7;
+  const cy = -(e.clientY / window.innerHeight - 0.5) * 7;
+  for (let i = 0; i < 60; i++) {
+    const idx = Math.floor(Math.random() * count) * 3;
+    pos[idx]     = cx + (Math.random() - 0.5) * 0.5;
+    pos[idx + 1] = cy + (Math.random() - 0.5) * 0.5;
+    pos[idx + 2] = (Math.random() - 0.5) * 2;
+  }
+  geo.attributes.position.needsUpdate = true;
+});
+</script>
+</body>
+</html>
